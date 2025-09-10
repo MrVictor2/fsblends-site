@@ -1,26 +1,17 @@
+/* Tailwind v4 – single import */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Brand palette using Tailwind v4 @theme tokens */
+@theme {
+  --color-brand-cream: #F3EFE7; /* page background */
+  --color-brand-sand:  #D6C2A1; /* header bar */
+  --color-brand-brown: #6B4B3A; /* accents/links */
+  --color-brand-gold:  #C5A46D; /* CTAs */
+  --color-brand-ink:   #1C1C1C; /* dark text */
 }
+:root { --logo-opacity: 0.08; }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* Optional nice baseline */
+html, body { height: 100%;
+    scroll-behavior: smooth;
+   }
