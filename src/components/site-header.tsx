@@ -1,4 +1,5 @@
 "use client";
+
 import { useCart } from "@/lib/cart";
 import * as React from "react";
 import Link from "next/link";
@@ -6,13 +7,41 @@ import Link from "next/link";
 export default function SiteHeader() {
   const [open, setOpen] = React.useState(false);
   const { toggle, count } = useCart();
+  const barRef = React.useRef<HTMLDivElement>(null);
+
+  const [hide, setHide] = React.useState(false);
+const lastY = React.useRef(0);
+
+React.useEffect(() => {
+  const onScroll = () => {
+    const y = window.scrollY;
+    const goingDown = y > lastY.current;
+    if (y < 16) setHide(false);
+    else if (goingDown && y - lastY.current > 8) setHide(true);
+    else if (!goingDown && lastY.current - y > 8) setHide(false);
+    lastY.current = y;
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  return () => window.removeEventListener("scroll", onScroll);
+}, []);
+React.useEffect(() => {
+  const update = () => {
+    const h = barRef.current?.offsetHeight ?? 56;
+    document.documentElement.style.setProperty("--header-offset", hide ? "0px" : `${h}px`);
+  };
+  update();
+  window.addEventListener("resize", update);
+  return () => window.removeEventListener("resize", update);
+}, [hide]);
 
   return (
     <>
       {/* --- TOP NAV BAR (slim + sticky) --- */}
-      <div className="fixed inset-x-0 top-0 z-[60] border-b bg-brand-sand/95 backdrop-blur">
+      
+      <div ref={barRef} className={`fixed inset-x-0 top-0 z-[60] bg-brand-[#FFF7E6]/95 backdrop-blur text-[clamp(0.95rem,1.9vw,1.1rem)] transition-transform duration-300 will-change-transform ${hide ? "-translate-y-full" : "translate-y-0"}`}>
 
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 h-12">
+      <div className="mx-auto flex max-w-[min(90rem,92vw)] items-center gap-4 px-6 md:px-8 py-2 h-12">
+
           {/* LEFT: Social icons */}
           <div className="flex items-center gap-3 text-brand-ink">
             {/* Instagram */}
@@ -60,7 +89,7 @@ export default function SiteHeader() {
           {/* Brand text (kept small so bar stays slim) */}
           <Link
             href="/"
-            className="ml-3 text-base font-semibold text-brand-brown"
+            className="ml-3 font-semibold text-brand-ink"
             aria-label="FS Blends — Home"
           >
             FS Blends
@@ -68,7 +97,8 @@ export default function SiteHeader() {
 
 {/* RIGHT: nav + cart (pinned right) */}
 <div className="ml-auto hidden md:flex items-center gap-8">
-  <nav className="flex items-center gap-8 text-sm font-medium leading-none text-brand-ink">
+<nav className="flex items-center gap-8 font-medium leading-none text-brand-ink">
+
     <Link href="/products" className="hover:text-brand-brown">Products</Link>
     <Link href="/collection" className="hover:text-brand-brown">Collections</Link>
     <Link href="/gift" className="hover:text-brand-brown">Gift</Link>

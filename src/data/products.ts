@@ -25,7 +25,7 @@ export type Product = {
 export const products: Product[] = [
   // CLASSIC collection (all candles except the 3 desserts)
   { name: "First Love",            notes: "Fresh Cut Roses • Sandalwood • Wild Rose",        type: "candle", collection: "classic", 
-    image: "/images/products/first-love.jpg",
+    image: "/images/products/first-love-10oz.jpg",
   },
   
   { name: "Frazer Fir",            notes: "Cypress • Fir • Lemon Peel • Evergreen",          type: "candle", collection: "classic" },

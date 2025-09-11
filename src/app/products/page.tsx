@@ -1,4 +1,5 @@
 // src/app/products/page.tsx
+import Image from "next/image";
 import Link from "next/link";
 import { products, slugify, type Product } from "@/data/products";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,15 +15,15 @@ const jewelry       = products.filter((p) => p.type === "jewelry");
 
 export default function ProductsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-[clamp(1.5rem,4vw,3rem)]">
       {/* Heading */}
-      <h1 className="text-3xl font-semibold">Products</h1>
+      <h1 className="text-[clamp(1.75rem,3vw,2rem)] font-semibold">Products</h1>
       <p className="mt-1 text-neutral-700">Browse all FS Blends products by category.</p>
 
       {/* Sticky section index */}
       {/* Sticky section index */}
 <nav
-  className="sticky top-[56px] z-300 mt-6 rounded-lg border bg-white/80 px-3 py-2 backdrop-blur"
+  className="sticky top-[56px] z-[300] mt-6 rounded-lg border bg-white/80 px-3 py-2 backdrop-blur"
   aria-label="Product sections"
 >
   <ul className="flex flex-wrap items-center justify-center gap-3 text-sm">
@@ -79,8 +80,8 @@ export default function ProductsPage() {
 function Section({ id, title, items }: { id: string; title: string; items: Product[] }) {
   return (
     <section id={id} className="scroll-mt-24">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <h2 className="text-[clamp(1.125rem,2.2vw,1.5rem)] font-semibold">{title}</h2>
+      <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 md:gap-4">
         {items.map((p) => {
           const slug = slugify(p.name);
           const href = `/products/${slug}`;
@@ -89,21 +90,25 @@ function Section({ id, title, items }: { id: string; title: string; items: Produ
             <Link key={p.name} href={href} className="block group">
               <Card className="overflow-hidden bg-white/80 transition hover:shadow-md">
                 {/* Thumbnail (uses p.image if provided; soft placeholder otherwise) */}
-                <div className="relative h-40 w-full border-b">
-                  {p.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.image}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-brand-sand/60 text-sm text-brand-ink/60">
-                      No image yet
-                    </div>
-                  )}
-                </div>
+                <div className="relative w-full aspect-square border-b overflow-hidden">
+  {p.image ? (
+    <div className="absolute inset-0">
+      <Image
+        src={p.image}
+        alt=""
+        fill
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+        sizes="(min-width:1024px) 33vw, (min-width:768px) 45vw, 100vw"
+        priority={false}
+      />
+    </div>
+  ) : (
+    <div className="flex h-full w-full items-center justify-center bg-brand-sand/60 text-sm text-brand-ink/60">
+      No image yet
+    </div>
+  )}
+</div>
+
 
                 <CardHeader>
                   <CardTitle className="group-hover:text-brand-brown">{p.name}</CardTitle>

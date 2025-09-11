@@ -1,15 +1,40 @@
+"use client";
+
+import { motion, useScroll, useTransform, useMotionTemplate } from "framer-motion";
+import Image from "next/image";
+
 export default function BackgroundLogo() {
+  const { scrollYProgress } = useScroll();
+
+  // Fade + micro-scale (same)
+  const opacity = useTransform(scrollYProgress, [0, 0.35, 1], [1, 0.85, 0.85]);
+  const scale   = useTransform(scrollYProgress, [0, 0.35, 1], [1.10, 1.0, 1.0]);
+
+  // Gentle vertical parallax
+  const y       = useTransform(scrollYProgress, [0, 0.35, 1], ["1vh", "6vh", "2vh"]);
+  // Blur amount (number) → CSS filter string using useMotionTemplate
+  const blurPx  = useTransform(scrollYProgress, [0, 0.35, 1], [0, 6, 6]);
+  const filter = useMotionTemplate`blur(${blurPx}px)`;
+
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-[1]">
-      <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,.35)_0%,transparent_60%)]" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <img
+    <motion.div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-[1] flex items-start justify-center"
+      style={{ opacity }}
+    >
+      <motion.div
+        className="mt-[88px] md:mt-[124px] will-change-transform"
+        style={{ scale, y, filter }}
+      >
+        <Image
           src="/fs-logo.svg"
           alt=""
-          className="opacity-100 w-[min(85vw,900px)] h-auto select-none"
-          draggable={false}
+          width={540}
+          height={480}
+          className="w-[200px] md:w-[700px] h-auto opacity-100"
+          priority
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

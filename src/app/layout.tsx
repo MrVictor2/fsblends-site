@@ -1,3 +1,5 @@
+import BackToTop from "@/components/BackToTop";
+
 import SiteHeader from "@/components/site-header";
 import SiteFooter from "@/components/site-footer";
 import CartDrawer from "@/components/cart-drawer";
@@ -22,6 +24,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <SiteFooter />
           </div>
           <CartDrawer />
+          <BackToTop />
+
         </CartProvider>
       </body>
     </html>
