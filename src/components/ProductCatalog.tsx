@@ -18,7 +18,7 @@ export default function ProductCatalog({ showHeading = false }: { showHeading?: 
   className="mx-auto max-w-[min(90rem,92vw)] px-4
              pt-[clamp(1.5rem,4vw,3rem)]
              pb-[clamp(1.5rem,4vw,3rem)]">
-              <div id="catalog" className="h-0 scroll-mt-[calc(var(--header-offset,56px)8px)]" />
+              <div id="catalog" className="h-0 scroll-mt-[calc(var(--header-offset,56px)+8px)]" />
 
 
 
@@ -95,15 +95,16 @@ function Section({ id, title, items }: { id: string; title: string; items: Produ
             <Link key={p.name} href={href} className="block group">
               <Card className="h-full overflow-hidden border-0 p-0 bg-white/80 transition hover:shadow-md">
 
-              <div className="relative w-full aspect-[4/5] overflow-hidden">
+              + <div className="relative w-full aspect-[4/5] overflow-hidden rounded-2xl">
+
 
                   {p.image ? (
                     <div className="absolute inset-0">
                       <Image
                         src={p.image}
                         alt=""
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        fill         className="object-cover transition-transform duration-300 ease-out transform-gpu will-change-transform group-hover:scale-105"
+
      sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:768px) 45vw, 100vw" 
                         
                       />
