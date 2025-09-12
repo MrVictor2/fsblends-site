@@ -1,4 +1,8 @@
 // src/components/ProductCatalog.tsx
+
+import { Button } from "@/components/ui/button";
+import { QuickBuyDialog } from "@/components/QuickBuyDialog";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { products, slugify, type Product } from "@/data/products";
@@ -83,6 +87,8 @@ export default function ProductCatalog({ showHeading = false }: { showHeading?: 
 }
 
 function Section({ id, title, items }: { id: string; title: string; items: Product[] }) {
+  const router = useRouter();
+
   return (
     <section id={id} className="scroll-mt-24">
       <h2 className="text-[clamp(1.125rem,2.2vw,1.5rem)] font-semibold">{title}</h2>
@@ -95,7 +101,7 @@ function Section({ id, title, items }: { id: string; title: string; items: Produ
             <Link key={p.name} href={href} className="block group">
               <Card className="h-full overflow-hidden border-0 p-0 bg-white/80 transition hover:shadow-md">
 
-              + <div className="relative w-full aspect-[4/5] overflow-hidden rounded-2xl">
+              <div className="relative w-full aspect-[4/5] overflow-hidden rounded-2xl">
 
 
                   {p.image ? (
@@ -119,6 +125,25 @@ function Section({ id, title, items }: { id: string; title: string; items: Produ
                   <CardTitle className="group-hover:text-brand-brown">{p.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-neutral-700">{p.notes}</CardContent>
+                
+
+{/* Quick buy */}
+<div className="px-6 pb-5">
+  <QuickBuyDialog
+    productName={p.name}
+    trigger={
+      <Button className="w-full rounded-xl">
+        Buy now
+      </Button>
+    }
+    onConfirm={({ size, color }) => {
+      const slug = slugify(p.name);
+      // Next step we’ll wire to real cart; for now, go to a cart page with query params.
+      router.push(`/cart?product=${encodeURIComponent(slug)}&size=${size}&color=${color}`);
+    }}
+  />
+</div>
+
               </Card>
             </Link>
           );
