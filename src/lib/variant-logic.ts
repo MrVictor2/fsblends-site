@@ -1,5 +1,9 @@
 // src/lib/variant-logic.ts
-import { productVariants, type Variant, type CandleSize, type ContainerColor } from "@/data/variants";
+import { productVariants, type Variant } from "@/data/variants";
+
+/** Keep these EXACTLY in sync with src/data/variants.ts */
+export type CandleSize = "6oz" | "8oz" | "10oz";
+export type ContainerColor = "black" | "white";
 
 export type Selection = {
   size?: CandleSize;
@@ -9,78 +13,52 @@ export type Selection = {
 /** Does this product (by slug) have a container option at all? */
 export function hasContainer(slug: string): boolean {
   const rows = productVariants[slug] ?? [];
-  return rows.some(v => v.container !== undefined);
+  // If any variant has a color key, we consider container active
+  return rows.some(v => typeof v.color !== "undefined");
 }
 
-/** First in-stock variant becomes the default selection */
+/** First in-stock (or first) variant becomes the default selection */
 export function firstValidSelection(slug: string): Selection {
   const rows = productVariants[slug] ?? [];
   if (rows.length === 0) return {};
-  const first = rows.find(v => v.inStock) ?? rows[0];
-  return { size: first.size, container: first.container };
+  const first = rows[0];
+  return { size: first.size, container: first.color };
 }
 
 /** Find the concrete variant matching a selection (if valid) */
 export function findVariant(slug: string, sel: Selection): Variant | undefined {
   const rows = productVariants[slug] ?? [];
   return rows.find(v =>
-    v.inStock &&
-    v.size === sel.size &&
-    (
-      // match container exactly, or both undefined for exception products
-      (v.container === sel.container) ||
-      (v.container === undefined && sel.container === undefined)
-    )
+    (sel.size ? v.size === sel.size : true) &&
+    (typeof v.color === "undefined" || typeof sel.container === "undefined"
+      ? true
+      : v.color === sel.container)
   );
 }
 
 /** Which sizes are selectable given the current (partial) selection? */
 export function validSizes(slug: string, sel: Selection): Record<CandleSize, boolean> {
   const rows = productVariants[slug] ?? [];
-  const map: Record<CandleSize, boolean> = { "6 oz": false, "8 oz": false, "10 oz": false };
+  const map: Record<CandleSize, boolean> = { "6oz": false, "8oz": false, "10oz": false };
 
   for (const row of rows) {
-    if (!row.inStock) continue;
-    if (sel.container && row.container && row.container !== sel.container) continue;
+    // if user picked a container, only allow sizes that exist with that container
+    if (sel.container && typeof row.color !== "undefined" && row.color !== sel.container) continue;
     map[row.size] = true;
   }
-
   return map;
 }
 
 /** Which containers are selectable given the current (partial) selection? */
 export function validContainers(slug: string, sel: Selection): Record<ContainerColor, boolean> {
   const rows = productVariants[slug] ?? [];
-  const map: Record<ContainerColor, boolean> = { Black: false, White: false };
+  const map: Record<ContainerColor, boolean> = { black: false, white: false };
 
-  if (!hasContainer(slug)) return map; // product doesn’t use container
+  if (!hasContainer(slug)) return map;
 
   for (const row of rows) {
-    if (!row.inStock) continue;
     if (sel.size && row.size !== sel.size) continue;
-    if (row.container) map[row.container] = true;
-  }
-
-  return map;
-}
-
-
-/** Which containers are selectable given the current (partial) selection? */
-export function validContainers(slug: string, sel: Selection): Record<ContainerColor, boolean> {
-  const rows = productVariants[slug] ?? [];
-  const map: Record<ContainerColor, boolean> = { Black: false, White: false };
-
-  if (!hasContainer(slug)) {
-    // no container dimension for this product (exceptions)
-    return map;
-  }
-
-  for (const c of ["Black", "White"] as ContainerColor[]) {
-    map[c] = rows.some(v =>
-      v.inStock &&
-      (sel.size ? v.size === sel.size : true) &&
-      v.container === c
-    );
+    if (typeof row.color !== "undefined") map[row.color] = true;
   }
   return map;
 }
@@ -90,15 +68,18 @@ export function coerceSelection(slug: string, sel: Selection): Selection {
   // If current selection yields a valid variant, keep it
   if (findVariant(slug, sel)) return sel;
 
+  const rows = productVariants[slug] ?? [];
+  if (rows.length === 0) return {};
+
   // If size is chosen, try to fix container to any valid one for that size
   if (sel.size) {
-    const rows = productVariants[slug] ?? [];
-    const cands = rows.filter(v => v.inStock && v.size === sel.size);
+    const cands = rows.filter(v => v.size === sel.size);
     if (cands.length) {
-      return { size: sel.size, container: cands[0].container };
+      return { size: sel.size, container: cands[0].color };
     }
   }
 
-  // Fallback to first valid default
-  return firstValidSelection(slug);
+  // Fallback to first available
+  const first = rows[0];
+  return { size: first.size, container: first.color };
 }
