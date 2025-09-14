@@ -13,19 +13,53 @@ import {
   products,
   productDisplayName,
   productSlug,
-  slugify as _legacyDoNotUse, // keep import-free safety; unused
   type Product,
 } from "@/data/products";
 import { productVariants, type Variant } from "@/data/variants";
 
-export default function ProductCatalog({ showHeading = false }: { showHeading?: boolean }) {
-  const candlesClassic = products.filter((p) => p.type === "candle" && p.collection === "classic");
-  const candlesDessert = products.filter((p) => p.type === "candle" && p.collection === "dessert");
-  const waxMelts = products.filter((p) => p.type === "wax-melt");
-  const waxSachets = products.filter((p) => p.type === "wax-sachet");
-  const bags = products.filter((p) => p.type === "bag");
-  const clutches = products.filter((p) => p.type === "clutch");
-  const jewelry = products.filter((p) => p.type === "jewelry");
+/** Optional filter to reuse this grid on other pages (e.g., Collections) */
+type Filter = {
+  types?: Product["type"][];                  // e.g. ["candle"]
+  collections?: Array<"classic" | "dessert">; // e.g. ["classic","dessert"]
+};
+
+export default function ProductCatalog({
+  showHeading = false,
+  headingText = "Products",
+  hideIndex = false,
+  filter,
+}: {
+  showHeading?: boolean;
+  headingText?: string;
+  hideIndex?: boolean;
+  filter?: Filter;
+}) {
+  // filter helper
+  const include = (p: Product) => {
+    if (filter?.types && !filter.types.includes(p.type)) return false;
+    if (p.type === "candle" && filter?.collections) {
+      if (!p.collection) return false;
+      if (!filter.collections.includes(p.collection)) return false;
+    }
+    return true;
+  };
+
+  // section datasets (apply include() everywhere)
+  const candlesClassic = products.filter(
+    (p) => p.type === "candle" && p.collection === "classic" && include(p)
+  );
+  const candlesDessert = products.filter(
+    (p) => p.type === "candle" && p.collection === "dessert" && include(p)
+  );
+  const waxMelts   = products.filter((p) => p.type === "wax-melt"   && include(p));
+  const waxSachets = products.filter((p) => p.type === "wax-sachet" && include(p));
+  const bags       = products.filter((p) => p.type === "bag"        && include(p));
+  const clutches   = products.filter((p) => p.type === "clutch"     && include(p));
+  const jewelry    = products.filter((p) => p.type === "jewelry"    && include(p));
+
+  // if we're explicitly filtering to only candles, don't show non-candle sections
+  const onlyCandles =
+    !!filter?.types && filter.types.length === 1 && filter.types[0] === "candle";
 
   const { setItems, openCart } = useCart();
 
@@ -39,71 +73,88 @@ export default function ProductCatalog({ showHeading = false }: { showHeading?: 
 
       {showHeading && (
         <>
-          <h1 className="text-[clamp(1.75rem,3vw,2rem)] font-semibold">Products</h1>
-          <p className="mt-1 text-neutral-700">Browse all FS Blends products by category.</p>
+          <h1 className="text-[clamp(1.75rem,3vw,2rem)] font-semibold">{headingText}</h1>
+          <p className="mt-1 text-neutral-700">Browse FS Blends products.</p>
         </>
       )}
 
       {/* Sticky section index */}
-      <nav className="sticky [top:var(--header-offset,56px)] z-[300] mt-6 rounded-lg border bg-white/80 px-3 py-2 backdrop-blur">
-        <ul className="flex flex-wrap items-center justify-center gap-3 text-sm">
-          <li className="relative">
-            <a className="underline-offset-4 hover:underline" href="#candles-classic">
-              Classic Candles
-            </a>
-          </li>
-          <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
-            <a className="underline-offset-4 hover:underline" href="#candles-dessert">
-              Dessert Candles
-            </a>
-          </li>
-          {waxMelts.length > 0 && (
-            <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
-              <a className="underline-offset-4 hover:underline" href="#wax-melts">
-                Wax Melts
+      {!hideIndex && (
+        <nav className="sticky [top:var(--header-offset,56px)] z-[300] mt-6 rounded-lg border bg-white/80 px-3 py-2 backdrop-blur">
+          <ul className="flex flex-wrap items-center justify-center gap-3 text-sm">
+            <li className="relative">
+              <a className="underline-offset-4 hover:underline" href="#candles-classic">
+                Classic Candles
               </a>
             </li>
-          )}
-          {waxSachets.length > 0 && (
             <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
-              <a className="underline-offset-4 hover:underline" href="#wax-sachets">
-                Wax Sachets
+              <a className="underline-offset-4 hover:underline" href="#candles-dessert">
+                Dessert Candles
               </a>
             </li>
-          )}
-          {bags.length > 0 && (
-            <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
-              <a className="underline-offset-4 hover:underline" href="#bags">
-                Beaded Bags
-              </a>
-            </li>
-          )}
-          {clutches.length > 0 && (
-            <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
-              <a className="underline-offset-4 hover:underline" href="#clutches">
-                Clutches
-              </a>
-            </li>
-          )}
-          {jewelry.length > 0 && (
-            <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
-              <a className="underline-offset-4 hover:underline" href="#jewelry">
-                Jewelry
-              </a>
-            </li>
-          )}
-        </ul>
-      </nav>
+            {!onlyCandles && waxMelts.length > 0 && (
+              <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
+                <a className="underline-offset-4 hover:underline" href="#wax-melts">
+                  Wax Melts
+                </a>
+              </li>
+            )}
+            {!onlyCandles && waxSachets.length > 0 && (
+              <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
+                <a className="underline-offset-4 hover:underline" href="#wax-sachets">
+                  Wax Sachets
+                </a>
+              </li>
+            )}
+            {!onlyCandles && bags.length > 0 && (
+              <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
+                <a className="underline-offset-4 hover:underline" href="#bags">
+                  Beaded Bags
+                </a>
+              </li>
+            )}
+            {!onlyCandles && clutches.length > 0 && (
+              <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
+                <a className="underline-offset-4 hover:underline" href="#clutches">
+                  Clutches
+                </a>
+              </li>
+            )}
+            {!onlyCandles && jewelry.length > 0 && (
+              <li className="relative before:mx-2 before:content-['|'] before:text-neutral-400">
+                <a className="underline-offset-4 hover:underline" href="#jewelry">
+                  Jewelry
+                </a>
+              </li>
+            )}
+          </ul>
+        </nav>
+      )}
 
       {/* Sections */}
       <div className="mt-8 space-y-14">
-        <Section id="candles-classic" title="Classic Candles" items={candlesClassic} />
-        <Section id="candles-dessert" title="Dessert Candles" items={candlesDessert} />
-        {waxMelts.length > 0 && <Section id="wax-melts" title="Wax Melts" items={waxMelts} />}
-        {waxSachets.length > 0 && <Section id="wax-sachets" title="Wax Sachets" items={waxSachets} />}
-        {bags.length > 0 && <Section id="bags" title="Handmade Beaded Bags" items={bags} />}
-        {clutches.length > 0 && <Section id="clutches" title="Handcrafted Clutches" items={clutches} />}
-        {jewelry.length > 0 && <Section id="jewelry" title="Jewelry" items={jewelry} />}
+        {candlesClassic.length > 0 && (
+          <Section id="candles-classic" title="Classic Candles" items={candlesClassic} />
+        )}
+        {candlesDessert.length > 0 && (
+          <Section id="candles-dessert" title="Dessert Candles" items={candlesDessert} />
+        )}
+
+        {!onlyCandles && waxMelts.length > 0 && (
+          <Section id="wax-melts" title="Wax Melts" items={waxMelts} />
+        )}
+        {!onlyCandles && waxSachets.length > 0 && (
+          <Section id="wax-sachets" title="Wax Sachets" items={waxSachets} />
+        )}
+        {!onlyCandles && bags.length > 0 && (
+          <Section id="bags" title="Handmade Beaded Bags" items={bags} />
+        )}
+        {!onlyCandles && clutches.length > 0 && (
+          <Section id="clutches" title="Handcrafted Clutches" items={clutches} />
+        )}
+        {!onlyCandles && jewelry.length > 0 && (
+          <Section id="jewelry" title="Jewelry" items={jewelry} />
+        )}
       </div>
     </div>
   );
@@ -272,19 +323,32 @@ function InlineQuickBuy({
 
   return (
     <div
-      className="mt-auto px-6 pb-5"
+      className="relative px-6 pb-9"
       onClick={(e) => {
         // prevent card links from triggering
         e.stopPropagation();
       }}
     >
-      <Button className="w-full rounded-lg h-9 text-sm" onClick={handleBuyClick}>
+      <Button
+        onClick={handleBuyClick}
+        className="
+          w-auto h-10 rounded-lg text-sm font-medium
+          bg-brand-brown text-white
+          hover:bg-brand-brown/90
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-brown/40
+          active:opacity-90"
+      >
         Buy now
       </Button>
 
-      {/* Mini drawer (classic candles only) */}
+      {/* in-flow panel, Mini drawer (classic candles only) */}
       {opensPanel && open && (
-        <div className="mt-2 rounded-lg border bg-white p-2 shadow-sm">
+        <div
+          role="dialog"
+          aria-label="Quick buy"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute bottom-0 left-0 right-0 z-[60] rounded-xl border bg-white p-3 shadow-xl ring-1 ring-black/5 max-h-56 overflow-auto"
+        >
           {/* Size */}
           {sizes.length > 1 && (
             <div>
@@ -372,13 +436,13 @@ function InlineQuickBuy({
           </div>
 
           {/* Actions */}
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex gap-3">
             <Button
               onClick={addFromPanel}
               disabled={!ready}
               className="flex-1 h-8 rounded-md bg-brand-brown text-white hover:opacity-90 disabled:opacity-50"
             >
-              Add
+              Add to cart
             </Button>
             <Button variant="outline" onClick={() => setOpen(false)} className="h-8 px-3 rounded-md">
               Close
