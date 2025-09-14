@@ -5,7 +5,7 @@ export default function CollectionsPage() {
   return (
     <ProductCatalog
       showHeading
-      headingText="Classic Collection"
+      headingText="Classic Collections"
       hideIndex={false} // keep the two-chip index if you want; set to true to hide
       filter={{ types: ["candle"], collections: ["classic", "dessert"] }}
     />
