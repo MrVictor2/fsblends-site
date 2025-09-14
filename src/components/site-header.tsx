@@ -38,7 +38,7 @@ React.useEffect(() => {
     <>
       {/* --- TOP NAV BAR (slim + sticky) --- */}
       
-      <div ref={barRef} className={`fixed inset-x-0 top-0 z-[60] bg-brand-[#FFF7E6]/95 backdrop-blur text-[clamp(0.95rem,1.9vw,1.1rem)] transition-transform duration-300 will-change-transform ${hide ? "-translate-y-full" : "translate-y-0"}`}>
+      <div ref={barRef} className={`fixed inset-x-0 top-0 z-[60] bg-[#FFF7E6]/95 backdrop-blur text-[clamp(0.95rem,1.9vw,1.1rem)] transition-transform duration-300 will-change-transform ${hide ? "-translate-y-full" : "translate-y-0"}`}>
 
       <div className="mx-auto flex max-w-[min(90rem,92vw)] items-center gap-4 px-6 md:px-8 py-2 h-12">
 
